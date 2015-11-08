@@ -14,7 +14,7 @@
   },
   "main": "server.js",
   "scripts": {
-    "prepublish": "./node_modules/x-publish/scripts/prepublish.sh common.js",
+    "prepublish": "./node_modules/x-publish/scripts/prepublish.sh server.js",
     "test": "./node_modules/x-test/scripts/test.sh ./test"
   },
   "devDependencies": {
