@@ -3,4 +3,17 @@
 
 
 
+Defines and starts the HTTP server for mobile portal.
 
+# server
+
+create the server
+
+
+function to setup routes
+
+
+port,pidFile
+
+
+function to setup routes

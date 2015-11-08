@@ -1,6 +1,6 @@
 {
-  "name": "x-server",
-  "version": "0.0.1",
+  "name": "x-servers",
+  "version": "0.0.0",
   "dependencies": {
     "x-log": "latest",
     "x-common": "latest",
