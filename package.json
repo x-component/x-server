@@ -1,27 +1,24 @@
 {
-	"name"    : "x-server",
-	"version" : "0.0.0",
-	"dependencies" : {
-		"x-log"               : "latest",
-		"x-common"            : "latest",
-		"x-config"            : "latest",
-		"x-server-clusterize" : "latest",
-		"x-server-monitor"    : "latest",
-		"x-server-stats"      : "latest",
-		"x-server-heapdump"   : "latest",
-		"x-middleware-files"  : "latest",
-		"express"             : "latest"
-	},
-	"main" : "server.js",
-	"scripts": {
-		"prepublish" : "markdox -o ./README.md ./server.js"
-	},
-	"devDependencies": {
-		"x-publish": "latest",
-		"x-test": "latest"
-	},
-	"scripts": {
-		"prepublish": "./node_modules/x-publish/scripts/prepublish.sh common.js",
-		"test": "./node_modules/x-test/scripts/test.sh ./test"
-	}
+  "name": "x-server",
+  "version": "0.0.1",
+  "dependencies": {
+    "x-log": "latest",
+    "x-common": "latest",
+    "x-config": "latest",
+    "x-server-clusterize": "latest",
+    "x-server-monitor": "latest",
+    "x-server-stats": "latest",
+    "x-server-heapdump": "latest",
+    "x-middleware-files": "latest",
+    "express": "latest"
+  },
+  "main": "server.js",
+  "scripts": {
+    "prepublish": "./node_modules/x-publish/scripts/prepublish.sh common.js",
+    "test": "./node_modules/x-test/scripts/test.sh ./test"
+  },
+  "devDependencies": {
+    "x-publish": "latest",
+    "x-test": "latest"
+  }
 }
