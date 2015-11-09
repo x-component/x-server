@@ -94,7 +94,7 @@ server.stop = function (){
 server.main = function (script, setup/*function to setup routes*/, options) {
 	options = options || {};
 	
-	var _ = this;
+	var self = this;
 	
 	if (require('fs').realpathSync(require('path').resolve(process.argv[1])) == script){//started stand alone
 		
@@ -125,7 +125,7 @@ server.main = function (script, setup/*function to setup routes*/, options) {
 				},
 				function () {
 					// start a server for workers
-					_.start(setup, options);
+					self.start(setup, options);
 					
 					// upon request by parent process start an own monitor with stats
 					process.on('message', function (m) {
@@ -144,9 +144,17 @@ server.main = function (script, setup/*function to setup routes*/, options) {
 			// start a monitor for this process with stats
 			var mon = monitor().start(options.port ? {port:options.port + 1} : {});
 			stats.setup(mon);
+			
 			log.setup(mon);
 			
-			_.start(setup, options);
+			['SIGINT', 'SIGQUIT', 'SIGABRT', 'SIGTERM', 'SIGTSTP', 'SIGCONT', 'SIGHUP'].forEach(function (signal) {
+				process.on(signal, function (s) {
+					log.info && log.info('master received signal:' + signal);
+					self.stop(signal);
+				});
+			});
+			
+			self.start(setup, options);
 		}
 	}
 };
