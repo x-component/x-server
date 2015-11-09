@@ -4,7 +4,7 @@
   "dependencies": {
     "x-log": "latest",
     "x-common": "latest",
-    "x-config": "latest",
+    "x-configs": "latest",
     "x-server-clusterize": "latest",
     "x-server-monitor": "latest",
     "x-server-stats": "latest",

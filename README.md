@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/x-component/x-server.png?v0.0.1)](https://travis-ci.org/x-component/x-server)
+[![Build Status](https://travis-ci.org/x-component/x-servers.png?v0.0.1)](https://travis-ci.org/x-component/x-servers)
 =======================================================================================================
 
 

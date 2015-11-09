@@ -5,7 +5,7 @@
 
 
 var
-	config     = require('x-config')(__dirname+'/config'),
+	config     = require('x-configs')(__dirname+'/config'),
 	http       = require('http'),
 	path       = require('path'),
 	express    = require('express'),
