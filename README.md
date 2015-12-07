@@ -1,19 +1,23 @@
-[![Build Status](https://travis-ci.org/x-component/x-servers.png?v0.0.2)](https://travis-ci.org/x-component/x-servers)
-=======================================================================================================
+# x-servers
+
+[Build Status](https://travis-ci.org/x-component/x-servers.png?v0.0.3)](https://travis-ci.org/x-component/x-servers)
+
+- [./config.js](#configjs) 
+- [./server.js](#serverjs) 
+
+# ./config.js
+
+  - [clusterize](#clusterize)
+
+## clusterize
+
+  https: {
+  			// port:  otherwise it is the http port -1
+  			key : __dirname + '/ssl/development.server.private-key.out',
+  			cert: __dirname + '/ssl/development.server.cert.pem'
+  		},
+
+# ./server.js
 
 
 
-Defines and starts the HTTP server for mobile portal.
-
-# server
-
-create the server
-
-
-function to setup routes
-
-
-port,pidFile
-
-
-function to setup routes

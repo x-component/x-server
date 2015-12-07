@@ -2,23 +2,29 @@
   "name": "x-servers",
   "version": "0.0.3",
   "dependencies": {
-    "x-log": "latest",
-    "x-common": "latest",
-    "x-configs": "latest",
-    "x-server-clusterize": "latest",
-    "x-server-monitor": "latest",
-    "x-server-stats": "latest",
-    "x-server-heapdump": "latest",
-    "x-middleware-files": "latest",
-    "express": "latest"
+    "x-log": "1.x.x",
+    "x-crypto": "1.x.x",
+    "x-common": "1.x.x",
+    "x-configs": "1.x.x",
+    "x-server-clusterize": "1.x.x",
+    "x-server-monitor": "1.x.x",
+    "x-server-stats": "1.x.x",
+    "x-server-heapdump": "1.x.x",
+    "x-middleware-files": "1.x.x",
+    "express": "latest",
+    "compression": "latest",
+    "body-parser" : "latest",
+    "method-override": "latest",
+    "errorhandler" : "latest"
   },
   "main": "server.js",
   "scripts": {
-    "prepublish": "./node_modules/x-publish/scripts/prepublish.sh server.js",
-    "test": "./node_modules/x-test/scripts/test.sh ./test"
+    "prepublish": "./node_modules/x-publish/scripts/prepublish.sh",
+    "test": "$(npm bin)/mocha test/*.mocha.test.js"
   },
   "devDependencies": {
-    "x-publish": "latest",
-    "x-test": "latest"
+    "x-publish": "1.x.x",
+    "mocha"    : "latest",
+    "supertest": "latest"
   }
 }

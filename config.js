@@ -2,6 +2,7 @@
 
 var
 	merge = require('x-common').merge,
+	hash  = require('x-crypto').hash,
 	zlib  = require('zlib');
 
 var generic = {
@@ -38,6 +39,7 @@ var generic = {
 	},
 	
 	// version string
+	/*
 	version: ( function (){ // TODO PATH
 		var
 			version_path = __dirname + '/public/version/version.txt',
@@ -53,6 +55,7 @@ var generic = {
 		}
 		return {string:data,hash:require('../util/hash').string(data,{hash:'md5',encoding:'hex'})};
 	})()
+	*/
 };
 
 module.exports = {
@@ -72,7 +75,7 @@ module.exports = {
 		
 		version:(function(){ // this influences client caching: in development create a new hash on each restart
 			var now = Date.now();
-			return {string:''+now,hash:require('../util/hash').string(''+now,{hash:'md5',encoding:'hex'})};
+			return {string:''+now,hash:hash.string(''+now,{hash:'md5',encoding:'hex'})};
 		})()
 	}),
 	

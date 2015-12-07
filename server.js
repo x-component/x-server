@@ -17,6 +17,8 @@ var
 	
 	log             = require('x-log'),
 	merge           = require('x-common').merge,
+	extend          = require('x-common').extend,
+	node            = require('x-common').node,
 	clusterize      = require('x-server-clusterize'),
 	monitor         = require('x-server-monitor'),
 	stats           = require('x-server-stats'),
@@ -27,7 +29,7 @@ var
 require('http').globalAgent.maxSockets = config.agent.maxSockets;
 
 var
-	_error_handler        = errorHandler({showStack:process.env.NODE_ENV !== 'production'}),
+	_error_handler        = error_handler({showStack:process.env.NODE_ENV !== 'production'}),
 	logging_error_handler = function(err, req, res, next) {
 		if(err) {
 			var
@@ -39,7 +41,6 @@ var
 			log_info = extend(log_info,{request:{url:req.url,headers:req.headers}});
 			error_log = error_log || log;
 			error_log.error && error_log.error('server error handler caught error', log_info );
-i			
 			res.setHeader('Content-Type','text/plain');
 			res.status(status).send(msg);
 			return;
@@ -54,11 +55,11 @@ var M;
 module.exports = extend(M=function(options){
 	config = options || config;
 	
-	var server = express(); // createServer is pre 3.0
+	var server = express();
 	
 	var http_server = http.createServer(server);
 	server.http=http_server;
-		if(config.https){
+	if(config.https){
 		try {
 			var https_server = https.createServer({
 				key  : fs.readFileSync( config.https.key  ),
@@ -76,40 +77,37 @@ module.exports = extend(M=function(options){
 		}
 	}
 	
-	server.configure(function () { // Configuration
-		
-		if(config.gzip) {
-			// if no filter is defined, define one otherwise prepend one
-			// wich will prevent a gzip encoding for redirects
-			// note:
-			var config_gzip = extend({}, config.gzip );
-			config_gzip.filter = (function(orig_filter){
-				return function(req,res){
-					// debugger;
-					if( res.statusCode > 299 && res.statusCode < 400 ) return false;
-						return orig_filter ? orig_filter(req,res) : true;
-				};
-			})(config_gzip.filter || compression.filter );
-			server.use( compression( config_gzip ) );
-		}
-		
-		server.use(body_parser());
-		server.use(method_override());
-		if(config.files){
-			server.use(require('x-middleware-files')(path.resolve(__dirname,config.files)));
-		}
-		server.use(server.router);
-		server.use(logging_error_handler);
-	});
+	if(config.gzip) {
+		// if no filter is defined, define one, otherwise prepend one
+		// wich will prevent a gzip encoding for redirects
+		// note:
+		var config_gzip = extend({}, config.gzip );
+		config_gzip.filter = (function(orig_filter){
+			return function(req,res){
+				// debugger;
+				if( res.statusCode > 299 && res.statusCode < 400 ) return false;
+					return orig_filter ? orig_filter(req,res) : true;
+			};
+		})(config_gzip.filter || compression.filter );
+		server.use( compression( config_gzip ) );
+	}
+	
+	server.use(body_parser.json());
+	server.use(method_override());
+	if(config.files){
+		server.use(require('x-middleware-files')(path.resolve(__dirname,config.files)));
+	}
+	server.use(logging_error_handler);
 	
 	server.start = function (setup/*function to setup routes*/, options/*port,pidFile*/, cb) {
-		
 		if( typeof(options) === 'function' ) {
 			cb      = options;
 			options = {};
 		}
 		options = merge({}, config, options);
 		cb      = cb || options.callback;
+		
+		
 		
 		this.config = options;
 		
@@ -122,10 +120,14 @@ module.exports = extend(M=function(options){
 		
 		
 		this.get('/ping', function (req, res) {
-			res.send(200);
+			res.sendStatus(200);
+			res.send();
 		});	// called by monit
-		this.get('/alive', function (req, res) {  // called by load balancer
-			res.writeHead(200, {'Content-Type':"text/plain"});
+		this.get('/alive', function (req, res) {
+			res.writeHead(200, {
+				'Content-Type':"text/plain",
+				'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0'
+			});
 			res.write("healthy");
 			res.end();
 		});
@@ -136,7 +138,34 @@ module.exports = extend(M=function(options){
 			next && next();
 		});
 		
-		setup(this);
+		setup && setup.call(this,this);
+		
+		
+		//--SETUP HTTPS LISTENER---
+		if( this.https && options.https && https_port ){
+			
+			// modify callback to be called once on err and only the 2. time on ok
+			cb = function(cb_orig){
+				var count = 0;
+				return function(err,server){
+					count ++;
+					if(!err && count < 2) return;
+					cb_orig && cb_orig.apply(this,arguments);
+					cb_orig=null;
+				};
+			}(cb);
+			
+			this.https.listen(https_port);
+			this.https.once('listening', function(err) {
+				if(err) {
+					log.error && log.error('HTTPS Server not listening', err);
+					cb(err);
+					return;
+				}
+				log.info && log.info('HTTPS Server listening on port ' + https_port + ' in ' + (process.env.NODE_ENV || 'development') + ' mode');
+				cb && cb(null,this);
+			});
+		}
 		
 		//--SETUP HTTP LISTENER---
 		this.http.listen(http_port);
@@ -150,57 +179,31 @@ module.exports = extend(M=function(options){
 			cb && cb(null,this);
 		});
 		
-		//--SETUP HTTPS LISTENER---
-		if( this.https && options.https && https_port ){
-			this.https.listen(https_port);
-			this.https.once('listening', function(err) {
-				if(err) {
-					log.error && log.error('HTTPS Server not listening', err);
-					cb(err);
-					return;
-				}
-				log.info && log.info('HTTPS Server listening on port ' + https_port + ' in ' + (process.env.NODE_ENV || 'development') + ' mode');
-				cb && cb(null,this);
-			});
-		}
-		
-		heapdump();	
+		heapdump();
 	};
 	
 	server.stop = function (){
 		this.http.close();
+		if(this.https ) this.https.close();
 		
 		if(log.info)log.info('server closed');
 	};
 	
-	
 	// setup and then start
-	server.main = function (script, setup/*function to setup routes*/, options) {
+	server.main = function (script, setup /*function to setup routes*/, options) {
+		
 		options = options || {};
 		
 		var self = this;
 		
-		if (require('fs').realpathSync(require('path').resolve(process.argv[1])) == script){//started stand alone
-		
+		if (require('fs').realpathSync(require('path').resolve(process.argv[1])) == script){ //started stand alone
+			
 			if (process.argv[2])options.port = process.argv[2];
 			
 			if (process.env.NODE_ENV && !~process.env.NODE_ENV.indexOf('development')){
 			
 				var cluster = new clusterize(
 					function () {
-						
-						// start mock
-						if ( !process.env.NODE_ENV
-						  || ~process.env.NODE_ENV.indexOf('development')
-						  || ~process.env.NODE_ENV.indexOf('test')
-						   ) {
-							
-							try {
-								require('../backend/mce/mock/server').start();
-							} catch(error) {
-								log.error && log.error('Could not start MCE Mock server ' + error, error);
-							}
-						}
 						
 						var port = options.port || 18080;
 						for (var pid in cluster.workers) { // each worker an own monitor
@@ -234,10 +237,11 @@ module.exports = extend(M=function(options){
 			}
 		}
 	};
+	return server;
 },{
 	// create server then call main on it
 	main : function (script, setup/*function to setup routes*/, options) {
-		//not started stand alone
+		
 		if( !node( script ) ){
 			return;
 		}
@@ -245,3 +249,6 @@ module.exports = extend(M=function(options){
 		M().main( script, setup, options );
 	}
 });
+
+// for testing when called directly stand alone
+M().main(__filename);
